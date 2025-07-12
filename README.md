@@ -1,4 +1,14 @@
 # Skill-Swap Platform
+team : Parth Singla, 9998567019, singlaparth19@gmail.com 
+h: 7703838101
+Aakarsh Antriksh
+aak.antriksh@gmail.com
+Achintya Chaurasia 
+8009440057
+achintyachaurasia08@gmail.com 
+rishabh sain 
+8107388338 
+rishabhsain088@gmail.com 
 
 A full-stack web application that enables users to exchange skills and knowledge with others in their community.
 
