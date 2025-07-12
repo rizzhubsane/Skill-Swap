@@ -354,7 +354,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Email and password are required" });
       }
       const user = await storage.getUserByEmail(email);
-      if (!user || !user.isAdmin) {
+      if (!user || !(user.isAdmin || user.is_admin)) {
         return res.status(403).json({ message: "Not authorized as admin" });
       }
       const isValid = await bcrypt.compare(password, user.password);

@@ -2,6 +2,8 @@ import 'dotenv/config';
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { storage } from "./storage";
+import bcrypt from "bcryptjs";
 
 const app = express();
 app.use(express.json());
@@ -38,6 +40,27 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Ensure hardcoded admin user exists
+  const adminEmail = "odoo-hackathon@gmail.com";
+  const adminPassword = "odoo-hackathon";
+  const existingAdmin = await storage.getUserByEmail(adminEmail);
+  if (!existingAdmin) {
+    const hashedPassword = await bcrypt.hash(adminPassword, 10);
+    await storage.createUser({
+      name: "Admin",
+      email: adminEmail,
+      password: hashedPassword,
+      is_admin: true,
+      is_public: false,
+    });
+    log("Hardcoded admin user created: " + adminEmail);
+  } else {
+    // Always update password and admin status to guarantee login
+    const hashedPassword = await bcrypt.hash(adminPassword, 10);
+    await storage.updateUser(existingAdmin.id, { password: hashedPassword, is_admin: true });
+    log("Hardcoded admin user updated: " + adminEmail);
+  }
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
