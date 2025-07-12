@@ -1,124 +1,79 @@
-# Skill-Swap Platform
+# 🔁 SkillSwap Platform
 
-A full-stack web application that enables users to exchange skills and knowledge with others in their community.
+SkillSwap is a full-stack web application that enables users to exchange their skills in a structured and secure environment. Built with **React**, **Express**, and **PostgreSQL**, it provides a smooth user experience, real-time interactions, admin moderation tools, and a modern UI optimized for desktop and mobile.
 
-## Features
+---
 
-- **User Authentication**: Secure login and registration system
-- **Profile Management**: Upload and manage profile photos with drag & drop support
-- **Skill Profiles**: Create and manage your skill profile
-- **Skill Matching**: Find users with complementary skills
-- **Swap Requests**: Send and manage skill exchange requests
-- **Real-time Messaging**: Communicate with other users
-- **Admin Dashboard**: Manage users and platform content
-- **Responsive Design**: Works on desktop and mobile devices
+## 🧠 Our Approach
 
-## Tech Stack
+The SkillSwap platform was built with the following guiding principles:
+
+- **Skill-first matching**: Let users offer and request skills clearly
+- **Simplicity and accessibility**: Use intuitive UX and responsive design
+- **Security by design**: JWT-based authentication and protected routes
+- **Maintainability**: Use type-safe tooling across frontend/backend
+- **Scalability**: Optimized queries and separation of concerns
+- **Developer Experience**: Modern stack with monorepo architecture and auto-reloading development environment
+
+---
+
+## 🚀 Features
+
+### 👥 User Management
+- JWT-based authentication (login/register)
+- Profile creation and skill listing (offered + wanted)
+- Upload profile photos (drag & drop + preview)
+- Public/private profile toggle
+- Browse and filter user profiles by skills
+- Secure password hashing with bcrypt
+
+### 🔁 Skill Swap System
+- Send/accept/reject swap requests
+- Status: pending, accepted, rejected, completed
+- Real-time messaging within requests
+- Feedback and ratings after swap completion
+- Automatic rating calculation
+
+### 🛠️ Admin Dashboard
+- Ban/unban users
+- Monitor swap activity and stats
+- View all users and feedback
+
+### 📸 Profile Photo Support
+- JPEG, PNG, GIF formats up to 5MB
+- Image previews before uploading
+- Stored as Base64 strings
+- Fully responsive design
+
+---
+
+## ⚙️ Tech Stack
 
 ### Frontend
-- **React** with TypeScript
-- **Vite** for build tooling
-- **Tailwind CSS** for styling
-- **Shadcn/ui** for UI components
-- **React Query** for data fetching
-- **React Router** for navigation
+- **React 18 + TypeScript**
+- **Vite** for lightning-fast build and dev server
+- **TailwindCSS** for styling
+- **shadcn/ui** for accessible components
+- **TanStack Query (React Query)** for data fetching
+- **Wouter** for routing
 
 ### Backend
-- **Node.js** with TypeScript
-- **Express.js** for API server
-- **Drizzle ORM** for database operations
-- **SQLite** for database (can be easily switched to PostgreSQL/MySQL)
+- **Node.js + Express** (ES Modules)
+- **TypeScript** with full type safety
+- **Drizzle ORM** for PostgreSQL access
+- **JWT authentication** with `jsonwebtoken`
+- **Password security** using `bcryptjs`
+- **Express-session + connect-pg-simple** for persistent sessions
 
-## Getting Started
+### Database
+- **PostgreSQL** hosted on Neon (serverless) or Railway
+- DrizzleKit for schema and migrations
 
-### Profile Photo Feature
+### Shared Monorepo
+- Common `schema.ts` for DB models and API types
+- Shared `@shared/schema` ensures type safety across frontend/backend
 
-The platform now supports profile photo uploads with the following features:
-- **Drag & Drop**: Easily upload photos by dragging and dropping files
-- **Image Preview**: See a preview before uploading
-- **File Validation**: Supports JPEG, PNG, and GIF files up to 5MB
-- **Base64 Storage**: Photos are stored as base64 strings in the database
-- **Responsive Design**: Works seamlessly on mobile and desktop
+---
 
-### Prerequisites
-- Node.js (v18 or higher)
-- npm or yarn
+## 🗂️ Project Structure
 
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd Skill-Swap
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment variables**
-   Create a `.env` file in the root directory:
-   ```env
-   DATABASE_URL=file:./dev.db
-   JWT_SECRET=your-secret-key-here
-   PORT=3000
-   ```
-
-4. **Set up the database**
-   ```bash
-   npm run db:generate
-   npm run db:migrate
-   ```
-
-5. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-
-The application will be available at `http://localhost:3000`
-
-## Project Structure
-
-```
-Skill-Swap/
-├── client/                 # Frontend React application
-│   ├── src/
-│   │   ├── components/     # Reusable UI components
-│   │   ├── pages/         # Page components
-│   │   ├── hooks/         # Custom React hooks
-│   │   └── lib/           # Utility functions and configurations
-│   └── index.html
-├── server/                # Backend Node.js application
-│   ├── routes.ts          # API route definitions
-│   ├── db.ts             # Database configuration
-│   └── index.ts          # Server entry point
-├── shared/               # Shared types and schemas
-│   └── schema.ts         # Database schema definitions
-└── package.json          # Project dependencies and scripts
-```
-
-## Available Scripts
-
-- `npm run dev` - Start development server (both frontend and backend)
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run db:generate` - Generate database migrations
-- `npm run db:migrate` - Run database migrations
-- `npm run db:studio` - Open database studio
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-If you have any questions or need help, please open an issue on GitHub. 
