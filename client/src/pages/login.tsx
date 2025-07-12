@@ -10,13 +10,15 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { loginSchema, type LoginData } from "@shared/schema";
 import { ArrowRightLeft } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export default function Login() {
   const [, setLocation] = useLocation();
   const { login } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-
+  const [loginMode, setLoginMode] = useState<'user' | 'admin'>('user');
+  const [adminError, setAdminError] = useState<string | null>(null);
   const form = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -27,14 +29,34 @@ export default function Login() {
 
   const onSubmit = async (data: LoginData) => {
     setIsLoading(true);
+    setAdminError(null);
     try {
-      await login(data);
-      toast({
-        title: "Success",
-        description: "Logged in successfully!",
-      });
-      setLocation("/");
+      if (loginMode === 'user') {
+        await login(data);
+        toast({
+          title: "Success",
+          description: "Logged in successfully!",
+        });
+        setLocation("/");
+      } else {
+        // Admin login
+        const response = await fetch("/api/admin/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message || "Admin login failed");
+        // Store token as skillswap_token for unified experience
+        localStorage.setItem("skillswap_token", result.token);
+        toast({
+          title: "Success",
+          description: "Logged in as admin!",
+        });
+        setLocation("/admin");
+      }
     } catch (error: any) {
+      if (loginMode === 'admin') setAdminError(error.message);
       toast({
         title: "Error",
         description: error.message || "Login failed",
@@ -60,6 +82,12 @@ export default function Login() {
           <p className="text-skill-gray">Sign in to your SkillSwap account</p>
         </CardHeader>
         <CardContent>
+          <Tabs defaultValue="user" value={loginMode} onValueChange={v => setLoginMode(v as 'user' | 'admin')} className="mb-4">
+            <TabsList className="w-full flex">
+              <TabsTrigger value="user" className="flex-1">User Login</TabsTrigger>
+              <TabsTrigger value="admin" className="flex-1">Admin Login</TabsTrigger>
+            </TabsList>
+          </Tabs>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <Label htmlFor="email">Email</Label>
@@ -67,7 +95,7 @@ export default function Login() {
                 id="email"
                 type="email"
                 {...form.register("email")}
-                placeholder="Enter your email"
+                placeholder={loginMode === 'admin' ? "Enter admin email" : "Enter your email"}
                 className="mt-1"
               />
               {form.formState.errors.email && (
@@ -92,13 +120,15 @@ export default function Login() {
                 </p>
               )}
             </div>
-
+            {loginMode === 'admin' && adminError && (
+              <div className="text-destructive text-sm">{adminError}</div>
+            )}
             <Button
               type="submit"
               className="w-full bg-skill-primary hover:bg-skill-primary/90"
               disabled={isLoading}
             >
-              {isLoading ? "Signing In..." : "Sign In"}
+              {isLoading ? (loginMode === 'admin' ? "Signing In as Admin..." : "Signing In...") : (loginMode === 'admin' ? "Sign In as Admin" : "Sign In")}
             </Button>
           </form>
 

@@ -24,6 +24,7 @@ export interface IStorage {
   updateSwapRequestStatus(id: number, status: string): Promise<SwapRequest | undefined>;
   getUserSwapRequests(userId: number): Promise<SwapRequest[]>;
   getSwapRequestsWithUsers(userId: number): Promise<any[]>;
+  getAllSwapRequestsWithUsers(): Promise<any[]>;
   
   // Feedback
   createFeedback(feedback: InsertFeedback): Promise<Feedback>;
@@ -170,6 +171,32 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(sql`${users} as sender`, eq(swapRequests.senderId, sql`sender.id`))
       .leftJoin(sql`${users} as receiver`, eq(swapRequests.receiverId, sql`receiver.id`))
       .where(or(eq(swapRequests.senderId, userId), eq(swapRequests.receiverId, userId)))
+      .orderBy(desc(swapRequests.createdAt));
+  }
+
+  async getAllSwapRequestsWithUsers(): Promise<any[]> {
+    return await db
+      .select({
+        id: swapRequests.id,
+        offeredSkill: swapRequests.offeredSkill,
+        requestedSkill: swapRequests.requestedSkill,
+        status: swapRequests.status,
+        message: swapRequests.message,
+        createdAt: swapRequests.createdAt,
+        sender: {
+          id: sql`sender.id`,
+          name: sql`sender.name`,
+          email: sql`sender.email`,
+        },
+        receiver: {
+          id: sql`receiver.id`,
+          name: sql`receiver.name`,
+          email: sql`receiver.email`,
+        },
+      })
+      .from(swapRequests)
+      .leftJoin(sql`${users} as sender`, eq(swapRequests.senderId, sql`sender.id`))
+      .leftJoin(sql`${users} as receiver`, eq(swapRequests.receiverId, sql`receiver.id`))
       .orderBy(desc(swapRequests.createdAt));
   }
 

@@ -333,6 +333,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/admin/swaps", authenticateToken, requireAdmin, async (req: any, res) => {
+    try {
+      const swaps = await storage.getAllSwapRequestsWithUsers();
+      res.json(swaps);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to get all swap requests" });
+    }
+  });
+
+  // Admin login route
+  app.post("/api/admin/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
+      }
+      const user = await storage.getUserByEmail(email);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Not authorized as admin" });
+      }
+      const isValid = await bcrypt.compare(password, user.password);
+      if (!isValid) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      const token = jwt.sign(
+        { id: user.id, email: user.email, isAdmin: true },
+        JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+      const { password: _, ...userWithoutPassword } = user;
+      res.json({
+        message: "Admin login successful",
+        user: userWithoutPassword,
+        token,
+        isAdmin: true
+      });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message || "Admin login failed" });
+    }
+  });
+
+  // Get all skills for moderation
+  app.get("/api/admin/skills", authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      // Flatten all skills with user info
+      const skills = [];
+      users.forEach(user => {
+        (user.skillsOffered || []).forEach(skill => {
+          skills.push({
+            userId: user.id,
+            userName: user.name,
+            userEmail: user.email,
+            type: "offered",
+            skill,
+          });
+        });
+        (user.skillsWanted || []).forEach(skill => {
+          skills.push({
+            userId: user.id,
+            userName: user.name,
+            userEmail: user.email,
+            type: "wanted",
+            skill,
+          });
+        });
+      });
+      res.json(skills);
+    } catch (error) {
+      res.status(500).json({ message: error.message || "Failed to fetch skills" });
+    }
+  });
+
+  // Remove a skill from a user (offered or wanted)
+  app.delete("/api/admin/skills/:userId", authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { skill, type } = req.body;
+      if (!skill || !type || !["offered", "wanted"].includes(type)) {
+        return res.status(400).json({ message: "Skill and type (offered/wanted) required" });
+      }
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      let updatedSkills;
+      if (type === "offered") {
+        updatedSkills = (user.skillsOffered || []).filter(s => s !== skill);
+        await storage.updateUser(userId, { skillsOffered: updatedSkills });
+      } else {
+        updatedSkills = (user.skillsWanted || []).filter(s => s !== skill);
+        await storage.updateUser(userId, { skillsWanted: updatedSkills });
+      }
+      res.json({ message: "Skill removed successfully" });
+    } catch (error) {
+      res.status(400).json({ message: error.message || "Failed to remove skill" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
