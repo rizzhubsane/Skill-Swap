@@ -18,8 +18,9 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Search, Code, Palette, Languages, Music } from "lucide-react";
+import { Plus, Search, Code, Palette, Languages, Music, BookOpen, Briefcase, Utensils, Heart, Camera, Wrench } from "lucide-react";
 import { auth } from "@/lib/auth";
+import SkillFilter from "@/components/skill-filter";
 import type { User } from "@shared/schema";
 
 export default function Home() {
@@ -44,7 +45,12 @@ export default function Home() {
     queryKey: ["/api/users/search", searchParams],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (searchParams.skill) params.append("skill", searchParams.skill);
+      
+      // Simple skill filtering - just pass the skill text directly
+      if (searchParams.skill) {
+        params.append("skill", searchParams.skill);
+      }
+      
       if (searchParams.location) params.append("location", searchParams.location);
       if (searchParams.availability) params.append("availability", searchParams.availability);
       params.append("page", searchParams.page.toString());
@@ -67,11 +73,18 @@ export default function Home() {
     setShowSwapModal(true);
   };
 
+  // Simple skill categories for display purposes only
   const skillCategories = [
-    { icon: Code, name: "Programming", skills: ["React", "Python", "JavaScript", "Node.js"] },
-    { icon: Palette, name: "Design", skills: ["UI/UX Design", "Graphic Design", "Figma", "Adobe Suite"] },
-    { icon: Languages, name: "Languages", skills: ["Spanish", "French", "German", "Japanese"] },
-    { icon: Music, name: "Music", skills: ["Guitar", "Piano", "Music Theory", "Singing"] },
+    { icon: Code, name: "Programming" },
+    { icon: Palette, name: "Design" },
+    { icon: Languages, name: "Languages" },
+    { icon: Music, name: "Music" },
+    { icon: BookOpen, name: "Academic" },
+    { icon: Briefcase, name: "Business" },
+    { icon: Utensils, name: "Culinary" },
+    { icon: Heart, name: "Health & Fitness" },
+    { icon: Camera, name: "Creative Arts" },
+    { icon: Wrench, name: "Technical" }
   ];
 
   if (authLoading) {
@@ -136,58 +149,7 @@ export default function Home() {
             <Card>
               <CardContent className="p-6">
                 <h2 className="text-lg font-semibold mb-4">Find Skills & People</h2>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div>
-                    <Label>Skill Category</Label>
-                    <Select
-                      value={searchParams.skill}
-                      onValueChange={(value) =>
-                        setSearchParams({ ...searchParams, skill: value === "all" ? "" : value, page: 1 })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="All Categories" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Categories</SelectItem>
-                        {skillCategories.flatMap(cat =>
-                          cat.skills.map(skill => (
-                            <SelectItem key={skill} value={skill}>{skill}</SelectItem>
-                          ))
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Location</Label>
-                    <Input
-                      value={searchParams.location}
-                      onChange={(e) =>
-                        setSearchParams({ ...searchParams, location: e.target.value, page: 1 })
-                      }
-                      placeholder="Search location..."
-                    />
-                  </div>
-                  <div>
-                    <Label>Availability</Label>
-                    <Select
-                      value={searchParams.availability}
-                      onValueChange={(value) =>
-                        setSearchParams({ ...searchParams, availability: value === "any" ? "" : value, page: 1 })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Any Time" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="any">Any Time</SelectItem>
-                        <SelectItem value="weekdays">Weekdays</SelectItem>
-                        <SelectItem value="evenings">Evenings</SelectItem>
-                        <SelectItem value="weekends">Weekends</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+                <SkillFilter searchParams={searchParams} setSearchParams={setSearchParams} />
               </CardContent>
             </Card>
 

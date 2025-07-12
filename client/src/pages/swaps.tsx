@@ -206,11 +206,11 @@ export default function Swaps() {
                           <div className="space-y-2">
                             <div className="flex items-center space-x-2 text-sm">
                               <span className="text-skill-gray">Offers:</span>
-                              <Badge variant="outline" className="bg-skill-secondary bg-opacity-10 text-skill-secondary border-skill-secondary">
+                              <Badge variant="outline" className="bg-skill-secondary bg-opacity-10 text-white border-skill-secondary">
                                 {swap.offeredSkill}
                               </Badge>
                               <span className="text-skill-gray">for</span>
-                              <Badge variant="outline" className="bg-skill-accent bg-opacity-10 text-skill-accent border-skill-accent">
+                              <Badge variant="outline" className="bg-skill-accent bg-opacity-10 text-white border-skill-accent">
                                 {swap.requestedSkill}
                               </Badge>
                             </div>
@@ -320,11 +320,11 @@ export default function Swaps() {
                         <div className="space-y-2">
                           <div className="flex items-center space-x-2 text-sm">
                             <span className="text-skill-gray">You offered:</span>
-                            <Badge variant="outline" className="bg-skill-secondary bg-opacity-10 text-skill-secondary border-skill-secondary">
+                            <Badge variant="outline" className="bg-skill-secondary bg-opacity-10 text-white border-skill-secondary">
                               {swap.offeredSkill}
                             </Badge>
                             <span className="text-skill-gray">for</span>
-                            <Badge variant="outline" className="bg-skill-accent bg-opacity-10 text-skill-accent border-skill-accent">
+                            <Badge variant="outline" className="bg-skill-accent bg-opacity-10 text-white border-skill-accent">
                               {swap.requestedSkill}
                             </Badge>
                           </div>

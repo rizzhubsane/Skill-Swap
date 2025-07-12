@@ -209,6 +209,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { skill, location, availability, page = 1, limit = 10 } = req.query;
       
+      console.log('Search request:', { skill, location, availability, page, limit });
+      
       const users = await storage.searchUsers({
         skill,
         location,
@@ -220,8 +222,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Remove passwords from response
       const usersWithoutPasswords = users.map(({ password, ...user }) => user);
       
+      console.log(`Returning ${usersWithoutPasswords.length} users`);
       res.json(usersWithoutPasswords);
     } catch (error: any) {
+      console.error('Search error:', error);
       res.status(500).json({ message: error.message || "Search failed" });
     }
   });
