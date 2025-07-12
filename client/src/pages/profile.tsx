@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import Navigation from "@/components/navigation";
 import SkillTag from "@/components/skill-tag";
+import ProfilePhotoUpload from "@/components/profile-photo-upload";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -156,14 +157,14 @@ export default function Profile() {
                 <CardTitle>Basic Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex justify-center mb-6">
-                  <Avatar className="w-24 h-24">
-                    <AvatarImage src={user.profilePhoto || ""} alt={user.name} />
-                    <AvatarFallback className="text-2xl">
-                      {user.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
+                <ProfilePhotoUpload
+                  currentPhoto={user.profilePhoto}
+                  userName={user.name}
+                  onPhotoUpdate={(photoUrl) => {
+                    // Update the user object with the new photo
+                    refreshUser();
+                  }}
+                />
 
                 <div>
                   <Label htmlFor="name">Name</Label>

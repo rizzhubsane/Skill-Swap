@@ -5,6 +5,7 @@ A full-stack web application that enables users to exchange skills and knowledge
 ## Features
 
 - **User Authentication**: Secure login and registration system
+- **Profile Management**: Upload and manage profile photos with drag & drop support
 - **Skill Profiles**: Create and manage your skill profile
 - **Skill Matching**: Find users with complementary skills
 - **Swap Requests**: Send and manage skill exchange requests
@@ -29,6 +30,15 @@ A full-stack web application that enables users to exchange skills and knowledge
 - **SQLite** for database (can be easily switched to PostgreSQL/MySQL)
 
 ## Getting Started
+
+### Profile Photo Feature
+
+The platform now supports profile photo uploads with the following features:
+- **Drag & Drop**: Easily upload photos by dragging and dropping files
+- **Image Preview**: See a preview before uploading
+- **File Validation**: Supports JPEG, PNG, and GIF files up to 5MB
+- **Base64 Storage**: Photos are stored as base64 strings in the database
+- **Responsive Design**: Works seamlessly on mobile and desktop
 
 ### Prerequisites
 - Node.js (v18 or higher)

@@ -4,8 +4,25 @@ import { storage } from "./storage";
 import { insertUserSchema, loginSchema, insertSwapRequestSchema, insertFeedbackSchema, updateUserSchema } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import multer from "multer";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept only image files
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
+  },
+});
 
 // Middleware to verify JWT token
 const authenticateToken = (req: any, res: any, next: any) => {
@@ -145,6 +162,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       res.status(400).json({ message: error.message || "Failed to update profile" });
     }
+  });
+
+  // Profile photo upload endpoint
+  app.post("/api/users/profile-photo", authenticateToken, upload.single('photo'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      // Convert file to base64
+      const base64String = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      
+      // Update user's profile photo
+      const user = await storage.updateUser(req.user.id, { profilePhoto: base64String });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const { password, ...userWithoutPassword } = user;
+      res.json({
+        message: "Profile photo updated successfully",
+        user: userWithoutPassword,
+      });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message || "Failed to upload profile photo" });
+    }
+  });
+
+  // Error handling for multer
+  app.use((error: any, req: any, res: any, next: any) => {
+    if (error instanceof multer.MulterError) {
+      if (error.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ message: "File too large. Maximum size is 5MB." });
+      }
+      return res.status(400).json({ message: "File upload error" });
+    }
+    if (error.message === 'Only image files are allowed') {
+      return res.status(400).json({ message: "Only image files are allowed" });
+    }
+    next(error);
   });
 
   // Search users

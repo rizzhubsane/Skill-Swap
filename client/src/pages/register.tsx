@@ -10,12 +10,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { insertUserSchema, type InsertUser } from "@shared/schema";
 import { ArrowRightLeft } from "lucide-react";
+import RegistrationPhotoUpload from "@/components/registration-photo-upload";
 
 export default function Register() {
   const [, setLocation] = useLocation();
   const { register: registerUser } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
 
   const form = useForm<InsertUser>({
     resolver: zodResolver(insertUserSchema),
@@ -34,7 +36,11 @@ export default function Register() {
   const onSubmit = async (data: InsertUser) => {
     setIsLoading(true);
     try {
-      await registerUser(data);
+      const userData = {
+        ...data,
+        profilePhoto: profilePhoto || undefined,
+      };
+      await registerUser(userData);
       toast({
         title: "Success",
         description: "Account created successfully!",
@@ -123,6 +129,8 @@ export default function Register() {
                 className="mt-1"
               />
             </div>
+
+            <RegistrationPhotoUpload onPhotoChange={setProfilePhoto} />
 
             <Button
               type="submit"
