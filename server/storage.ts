@@ -78,10 +78,13 @@ export class DatabaseStorage implements IStorage {
     let whereConditions = [eq(users.isPublic, true), eq(users.isBanned, false)];
 
     if (params.skill) {
+      console.log(`Searching for skill: ${params.skill}`);
+      // Case-insensitive search using ILIKE for PostgreSQL
+      const searchTerm = params.skill.toLowerCase();
       whereConditions.push(
         or(
-          sql`${users.skillsOffered} @> ${JSON.stringify([params.skill])}`,
-          sql`${users.skillsWanted} @> ${JSON.stringify([params.skill])}`
+          sql`LOWER(${users.skillsOffered}::text) LIKE ${`%${searchTerm}%`}`,
+          sql`LOWER(${users.skillsWanted}::text) LIKE ${`%${searchTerm}%`}`
         )!
       );
     }
@@ -94,13 +97,23 @@ export class DatabaseStorage implements IStorage {
       whereConditions.push(ilike(users.availability, `%${params.availability}%`));
     }
 
-    return await db
+    const result = await db
       .select()
       .from(users)
       .where(and(...whereConditions))
       .orderBy(desc(users.rating))
       .limit(params.limit || 10)
       .offset(params.offset || 0);
+
+    console.log(`Found ${result.length} users with filters:`, params);
+    if (result.length > 0) {
+      console.log('Sample user skills:', {
+        skillsOffered: result[0].skillsOffered,
+        skillsWanted: result[0].skillsWanted
+      });
+    }
+
+    return result;
   }
 
   async getAllUsers(): Promise<User[]> {

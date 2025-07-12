@@ -7,11 +7,36 @@ A full-stack web application that enables users to exchange skills and knowledge
 - **User Authentication**: Secure login and registration system
 - **Profile Management**: Upload and manage profile photos with drag & drop support
 - **Skill Profiles**: Create and manage your skill profile
+- **Advanced Skill Filtering**: Search by skill categories or individual skills with autocomplete
 - **Skill Matching**: Find users with complementary skills
 - **Swap Requests**: Send and manage skill exchange requests
 - **Real-time Messaging**: Communicate with other users
 - **Admin Dashboard**: Manage users and platform content
 - **Responsive Design**: Works on desktop and mobile devices
+
+## Skill Filtering System
+
+The platform includes a comprehensive skill filtering system:
+
+### Skill Categories
+- **Programming**: React, Python, JavaScript, Node.js, TypeScript, Java, C++, C#, PHP, Ruby, Go, Rust, Swift, Kotlin, Dart, Flutter
+- **Design**: UI/UX Design, Graphic Design, Figma, Adobe Suite, Sketch, InVision, Prototyping, Wireframing, Brand Design, Illustration, Typography, Color Theory
+- **Languages**: Spanish, French, German, Japanese, Chinese, Italian, Portuguese, Russian, Arabic, Korean, Hindi, English, Dutch, Swedish
+- **Music**: Guitar, Piano, Music Theory, Singing, Drums, Bass, Violin, Saxophone, Composition, Music Production, DJing, Audio Engineering
+- **Academic**: Mathematics, Physics, Chemistry, Biology, History, Literature, Philosophy, Economics, Psychology, Sociology, Political Science, Geography
+- **Business**: Marketing, Sales, Project Management, Leadership, Public Speaking, Negotiation, Financial Planning, Business Strategy, Entrepreneurship, Market Research
+- **Culinary**: Cooking, Baking, Pastry Making, Wine Tasting, Food Photography, Meal Planning, Nutrition, International Cuisine, Food Styling, Recipe Development
+- **Health & Fitness**: Yoga, Meditation, Weight Training, Cardio, Nutrition, Mental Health, First Aid, Physical Therapy, Sports Coaching, Wellness
+- **Creative Arts**: Photography, Videography, Drawing, Painting, Sculpture, Digital Art, Animation, Film Making, Creative Writing, Poetry, Acting
+- **Technical**: Auto Repair, Home Improvement, Woodworking, Electronics, Plumbing, Electrical Work, Carpentry, Welding, 3D Printing, Robotics
+
+### Filtering Features
+- **Category-based filtering**: Select from predefined skill categories
+- **Individual skill search**: Search for specific skills with autocomplete
+- **Location filtering**: Filter by user location
+- **Availability filtering**: Filter by user availability (weekdays, evenings, weekends)
+- **Quick filters**: One-click filtering for popular categories
+- **Active filter display**: See and clear active filters
 
 ## Tech Stack
 
@@ -77,6 +102,7 @@ The platform now supports profile photo uploads with the following features:
    ```
 
 The application will be available at `http://localhost:3000`
+
 
 ## Project Structure
 
