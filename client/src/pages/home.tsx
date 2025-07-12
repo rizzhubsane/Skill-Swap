@@ -103,10 +103,10 @@ export default function Home() {
                 Connect with like-minded individuals to exchange knowledge, learn new skills, and grow together in a supportive community.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button className="bg-skill-secondary hover:bg-skill-secondary/90 text-white">
+                {/* <Button className="bg-skill-secondary hover:bg-skill-secondary/90 text-white">
                   <Plus className="w-4 h-4 mr-2" />
                   Add Your Skills
-                </Button>
+                </Button> */}
                 <Button className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white">
                   <Search className="w-4 h-4 mr-2" />
                   Find Skills
