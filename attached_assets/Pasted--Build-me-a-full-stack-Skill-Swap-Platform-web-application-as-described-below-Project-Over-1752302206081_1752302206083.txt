@@ -1,0 +1,126 @@
+🚀 Build me a full-stack Skill Swap Platform web application as described below:
+
+⸻
+
+📌 Project Overview:
+
+Create a mini platform where users can:
+	•	List their skills offered
+	•	List their skills wanted
+	•	Request a swap with other users
+	•	Accept or reject incoming swap requests
+	•	Leave ratings/feedback
+	•	Admins can moderate users and skill listings
+
+⸻
+
+🧠 Functional Features:
+
+User Profile
+	•	Name, email, location, availability (e.g., evenings), profile photo (optional)
+	•	Skills Offered (tag list)
+	•	Skills Wanted (tag list)
+	•	Public/Private profile toggle
+	•	Rating score
+
+Swap Functionality
+	•	Send/Accept/Reject/Delete swap requests
+	•	View pending, accepted, rejected swaps
+	•	Leave rating or feedback
+
+Browse/Search
+	•	Search profiles by skill
+	•	Filter by availability
+	•	Pagination
+
+Admin
+	•	Ban users
+	•	Reject inappropriate skills
+	•	View swap logs, feedback
+	•	Send platform announcements
+
+⸻
+
+⚙️ Stack to Use:
+	•	Frontend: React + TailwindCSS
+	•	Backend: Flask (Python)
+	•	Database: SQLite or PostgreSQL (use SQLAlchemy)
+	•	Auth: JWT-based authentication (Login/Register endpoints)
+	•	File Uploads: Use base64 or local storage for now
+	•	Deployment Ready: Add .env.example, README.md, and run.sh
+
+⸻
+
+🎨 UI/UX Design:
+
+Build clean, modern, tech-minimal UI with:
+	•	✅ Responsive layout (mobile/tablet/desktop)
+	•	✅ Use Tailwind breakpoints
+	•	✅ Minimal rounded UI with modern shadows
+	•	✅ Use this calming modern color palette:
+	•	Primary: #2C3E50 (Dark Navy)
+	•	Secondary: #18BC9C (Emerald Green)
+	•	Accent: #3498DB (Sky Blue)
+	•	Background: #F8F9FA (Off-white)
+	•	Text: #2D3436 (Charcoal)
+
+⸻
+
+🧱 Folder Structure:
+	•	/frontend: React app with components for Login, Register, Home, Profile, SwapRequest
+	•	/backend: Flask app with routes/, models/, db.py, auth.py, config.py
+	•	/shared: Any common constants or utils
+
+⸻
+
+🧪 Must Include:
+
+✅ Data Validation on both frontend and backend
+✅ Error Handling using try/except and fallback UIs
+✅ Dynamic Values from the database (no hardcoded skills)
+✅ Reusable Code (components, routes, services)
+✅ Linter setup (pylint or flake8 for Flask, eslint for React)
+✅ Comments + Docstrings
+
+⸻
+
+📊 Database Schema (suggested)
+	•	User: id, name, email, password_hash, location, availability, skills_offered[], skills_wanted[], profile_photo, rating, is_public, is_admin
+	•	SwapRequest: id, sender_id, receiver_id, offered_skill, requested_skill, status, message, created_at
+	•	Feedback: id, swap_id, rating, comment
+
+Use SQLAlchemy with proper foreign keys and indexes.
+
+⸻
+
+🌐 API Endpoints (Flask)
+	•	/api/auth/register
+	•	/api/auth/login
+	•	/api/users/profile GET/PUT
+	•	/api/users/search?skill=Python
+	•	/api/swaps/send
+	•	/api/swaps/respond
+	•	/api/swaps/list
+	•	/api/feedback/submit
+	•	/api/admin/users GET/PUT/BAN
+
+⸻
+
+🔍 UI Pages to Include:
+	•	Login/Register
+	•	Home Page (Skill search + browse users)
+	•	Profile (edit profile, public/private, manage skills)
+	•	Swap Requests (view and manage swap offers)
+	•	Request Flow Page (choose skill to swap, leave message)
+	•	Admin Dashboard (moderation tools)
+
+⸻
+
+✅ Final Output: A working, full-stack Skill Swap App that meets:
+	•	All review criteria
+	•	Implements clean database schema
+	•	Follows modular and reusable code
+	•	Frontend + backend fully connected
+	•	Can be deployed if needed via Render + Netlify
+
+Make sure all team members can collaborate in the codebase.
