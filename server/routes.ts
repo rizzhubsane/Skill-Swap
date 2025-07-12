@@ -272,6 +272,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/swaps/:id/complete", authenticateToken, async (req: any, res) => {
+    try {
+      const swapId = parseInt(req.params.id);
+
+      // Verify user is involved in this swap request
+      const swapRequest = await storage.getSwapRequest(swapId);
+      if (!swapRequest) {
+        return res.status(404).json({ message: "Swap request not found" });
+      }
+
+      if (swapRequest.senderId !== req.user.id && swapRequest.receiverId !== req.user.id) {
+        return res.status(403).json({ message: "Not authorized to complete this swap" });
+      }
+
+      if (swapRequest.status !== "accepted") {
+        return res.status(400).json({ message: "Only accepted swaps can be completed" });
+      }
+
+      const updatedRequest = await storage.updateSwapRequestStatus(swapId, "completed");
+      res.json(updatedRequest);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message || "Failed to complete swap" });
+    }
+  });
+
   app.get("/api/swaps/list", authenticateToken, async (req: any, res) => {
     try {
       const swaps = await storage.getSwapRequestsWithUsers(req.user.id);
@@ -303,6 +328,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(feedback);
     } catch (error: any) {
       res.status(400).json({ message: error.message || "Failed to submit feedback" });
+    }
+  });
+
+  app.get("/api/feedback/user/:userId", authenticateToken, async (req: any, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const feedback = await storage.getUserFeedbackWithDetails(userId);
+      res.json(feedback);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to get user feedback" });
     }
   });
 
@@ -350,7 +385,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Email and password are required" });
       }
       const user = await storage.getUserByEmail(email);
-      if (!user || !(user.isAdmin || user.is_admin)) {
+      if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Not authorized as admin" });
       }
       const isValid = await bcrypt.compare(password, user.password);
@@ -379,7 +414,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const users = await storage.getAllUsers();
       // Flatten all skills with user info
-      const skills = [];
+      const skills: any[] = [];
       users.forEach(user => {
         (user.skillsOffered || []).forEach(skill => {
           skills.push({
@@ -401,7 +436,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       });
       res.json(skills);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ message: error.message || "Failed to fetch skills" });
     }
   });
@@ -427,7 +462,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updateUser(userId, { skillsWanted: updatedSkills });
       }
       res.json({ message: "Skill removed successfully" });
-    } catch (error) {
+    } catch (error: any) {
       res.status(400).json({ message: error.message || "Failed to remove skill" });
     }
   });

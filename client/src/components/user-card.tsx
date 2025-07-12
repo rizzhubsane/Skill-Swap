@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Star, Clock, ArrowRightLeft } from "lucide-react";
+import { Clock, ArrowRightLeft } from "lucide-react";
 import SkillTag from "./skill-tag";
+import UserRating from "./user-rating";
 import type { User } from "@shared/schema";
 
 interface UserCardProps {
@@ -28,11 +29,7 @@ export default function UserCard({ user, onRequestSwap }: UserCardProps) {
                 <h3 className="font-semibold text-lg">{user.name}</h3>
                 <p className="text-skill-gray text-sm">{user.location}</p>
               </div>
-              <div className="flex items-center space-x-1">
-                <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                <span className="font-medium">{user.rating?.toFixed(1) || "0.0"}</span>
-                <span className="text-skill-gray text-sm">(0)</span>
-              </div>
+              <UserRating userId={user.id} rating={user.rating || 0} />
             </div>
             
             <div className="mb-3">

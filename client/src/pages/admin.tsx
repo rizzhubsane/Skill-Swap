@@ -97,7 +97,7 @@ function SkillModeration() {
 }
 
 function UserManagement() {
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const adminToken = localStorage.getItem("skillswap_token");

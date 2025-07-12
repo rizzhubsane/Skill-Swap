@@ -29,6 +29,7 @@ export interface IStorage {
   // Feedback
   createFeedback(feedback: InsertFeedback): Promise<Feedback>;
   getUserFeedback(userId: number): Promise<Feedback[]>;
+  getUserFeedbackWithDetails(userId: number): Promise<any[]>;
   updateUserRating(userId: number): Promise<void>;
 }
 
@@ -216,6 +217,31 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(feedback)
+      .where(eq(feedback.revieweeId, userId))
+      .orderBy(desc(feedback.createdAt));
+  }
+
+  async getUserFeedbackWithDetails(userId: number): Promise<any[]> {
+    return await db
+      .select({
+        id: feedback.id,
+        rating: feedback.rating,
+        comment: feedback.comment,
+        createdAt: feedback.createdAt,
+        reviewer: {
+          id: sql`reviewer.id`,
+          name: sql`reviewer.name`,
+          email: sql`reviewer.email`,
+        },
+        swapRequest: {
+          id: swapRequests.id,
+          offeredSkill: swapRequests.offeredSkill,
+          requestedSkill: swapRequests.requestedSkill,
+        },
+      })
+      .from(feedback)
+      .leftJoin(sql`${users} as reviewer`, eq(feedback.reviewerId, sql`reviewer.id`))
+      .leftJoin(swapRequests, eq(feedback.swapId, swapRequests.id))
       .where(eq(feedback.revieweeId, userId))
       .orderBy(desc(feedback.createdAt));
   }

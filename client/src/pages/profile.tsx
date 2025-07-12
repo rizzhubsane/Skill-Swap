@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import Navigation from "@/components/navigation";
@@ -21,7 +21,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { auth } from "@/lib/auth";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Star } from "lucide-react";
 
 export default function Profile() {
   const { user, isLoading: authLoading, refreshUser } = useAuth();
@@ -41,6 +41,23 @@ export default function Profile() {
   const [skillsWanted, setSkillsWanted] = useState<string[]>([]);
   const [newOfferedSkill, setNewOfferedSkill] = useState("");
   const [newWantedSkill, setNewWantedSkill] = useState("");
+
+  const { data: feedback = [] } = useQuery({
+    queryKey: ["/api/feedback/user", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const response = await fetch(`/api/feedback/user/${user.id}`, {
+        headers: auth.getAuthHeaders(),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch feedback");
+      }
+      
+      return response.json();
+    },
+    enabled: !!user?.id,
+  });
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -158,7 +175,7 @@ export default function Profile() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <ProfilePhotoUpload
-                  currentPhoto={user.profilePhoto}
+                  currentPhoto={user.profilePhoto || undefined}
                   userName={user.name}
                   onPhotoUpdate={(photoUrl) => {
                     // Update the user object with the new photo
@@ -297,6 +314,89 @@ export default function Profile() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Feedback Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Star className="w-5 h-5 text-yellow-400" />
+                <span>My Reviews & Ratings</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-4">
+                <div className="flex items-center space-x-2 mb-2">
+                  <span className="text-2xl font-bold">{user.rating?.toFixed(1) || "0.0"}</span>
+                  <div className="flex items-center">
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-5 h-5 ${
+                          i < Math.round(user.rating || 0)
+                            ? "text-yellow-400 fill-current"
+                            : "text-gray-300"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-skill-gray">({feedback.length} reviews)</span>
+                </div>
+              </div>
+
+              {feedback.length === 0 ? (
+                <div className="text-center py-8">
+                  <Star className="w-12 h-12 mx-auto mb-4 text-skill-gray opacity-50" />
+                  <h3 className="font-medium mb-2">No reviews yet</h3>
+                  <p className="text-skill-gray text-sm">
+                    Complete skill swaps to receive reviews from other users!
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {feedback.map((review: any) => (
+                    <div key={review.id} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                          <Avatar className="w-8 h-8">
+                            <AvatarFallback>
+                              {review.reviewer.name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium">{review.reviewer.name}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          {Array.from({ length: 5 }, (_, i) => (
+                            <Star
+                              key={i}
+                              className={`w-4 h-4 ${
+                                i < review.rating
+                                  ? "text-yellow-400 fill-current"
+                                  : "text-gray-300"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {review.comment && (
+                        <p className="text-sm text-skill-gray mb-2">{review.comment}</p>
+                      )}
+                      
+                      <div className="text-xs text-skill-gray">
+                        <span>Swap: </span>
+                        <span className="text-skill-secondary">{review.swapRequest.offeredSkill}</span>
+                        <span className="mx-1">↔</span>
+                        <span className="text-skill-accent">{review.swapRequest.requestedSkill}</span>
+                        <span className="ml-2">
+                          • {new Date(review.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           <div className="flex justify-end space-x-4">
             <Button

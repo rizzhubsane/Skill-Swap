@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
@@ -11,7 +11,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { auth } from "@/lib/auth";
-import { Clock, CheckCircle, XCircle, MessageCircle } from "lucide-react";
+import { Clock, CheckCircle, XCircle, MessageCircle, Star } from "lucide-react";
+import RatingModal from "@/components/rating-modal";
 
 interface SwapRequestWithUsers {
   id: number;
@@ -37,6 +38,21 @@ export default function Swaps() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [ratingModal, setRatingModal] = useState<{
+    isOpen: boolean;
+    swapId: number;
+    revieweeId: number;
+    revieweeName: string;
+    offeredSkill: string;
+    requestedSkill: string;
+  }>({
+    isOpen: false,
+    swapId: 0,
+    revieweeId: 0,
+    revieweeName: "",
+    offeredSkill: "",
+    requestedSkill: "",
+  });
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -233,6 +249,28 @@ export default function Swaps() {
                           </Button>
                         </div>
                       )}
+                      
+                      {swap.status === "accepted" && (
+                        <div className="flex space-x-2 ml-4">
+                          <Button
+                            size="sm"
+                            className="bg-skill-accent hover:bg-skill-accent/90"
+                            onClick={() => {
+                              setRatingModal({
+                                isOpen: true,
+                                swapId: swap.id,
+                                revieweeId: swap.sender.id,
+                                revieweeName: swap.sender.name,
+                                offeredSkill: swap.offeredSkill,
+                                requestedSkill: swap.requestedSkill,
+                              });
+                            }}
+                          >
+                            <Star className="w-3 h-3 mr-1" />
+                            Rate
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -303,6 +341,28 @@ export default function Swaps() {
                           </p>
                         </div>
                       </div>
+                      
+                      {swap.status === "accepted" && (
+                        <div className="flex space-x-2 ml-4">
+                          <Button
+                            size="sm"
+                            className="bg-skill-accent hover:bg-skill-accent/90"
+                            onClick={() => {
+                              setRatingModal({
+                                isOpen: true,
+                                swapId: swap.id,
+                                revieweeId: swap.receiver.id,
+                                revieweeName: swap.receiver.name,
+                                offeredSkill: swap.offeredSkill,
+                                requestedSkill: swap.requestedSkill,
+                              });
+                            }}
+                          >
+                            <Star className="w-3 h-3 mr-1" />
+                            Rate
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -311,6 +371,16 @@ export default function Swaps() {
           </TabsContent>
         </Tabs>
       </div>
+      
+      <RatingModal
+        isOpen={ratingModal.isOpen}
+        onClose={() => setRatingModal({ ...ratingModal, isOpen: false })}
+        swapId={ratingModal.swapId}
+        revieweeId={ratingModal.revieweeId}
+        revieweeName={ratingModal.revieweeName}
+        offeredSkill={ratingModal.offeredSkill}
+        requestedSkill={ratingModal.requestedSkill}
+      />
     </div>
   );
 }

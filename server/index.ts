@@ -50,14 +50,14 @@ app.use((req, res, next) => {
       name: "Admin",
       email: adminEmail,
       password: hashedPassword,
-      is_admin: true,
-      is_public: false,
-    });
+      isAdmin: true,
+      isPublic: false,
+    } as any);
     log("Hardcoded admin user created: " + adminEmail);
   } else {
     // Always update password and admin status to guarantee login
     const hashedPassword = await bcrypt.hash(adminPassword, 10);
-    await storage.updateUser(existingAdmin.id, { password: hashedPassword, is_admin: true });
+    await storage.updateUser(existingAdmin.id, { password: hashedPassword, isAdmin: true } as any);
     log("Hardcoded admin user updated: " + adminEmail);
   }
 
