@@ -48,15 +48,15 @@ export default function Home() {
       if (searchParams.location) params.append("location", searchParams.location);
       if (searchParams.availability) params.append("availability", searchParams.availability);
       params.append("page", searchParams.page.toString());
-      
+
       const response = await fetch(`/api/users/search?${params}`, {
         headers: auth.getAuthHeaders(),
       });
-      
+
       if (!response.ok) {
         throw new Error("Failed to search users");
       }
-      
+
       return response.json();
     },
     enabled: !!user,
@@ -92,14 +92,14 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-skill-background">
       <Navigation />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
-        <section className="bg-gradient-to-r from-skill-primary to-skill-accent rounded-2xl p-8 md:p-12 text-white mb-8">
+        <section className="bg-gradient-to-r from-skill-primary to-skill-accent rounded-2xl p-8 md:p-12 mb-8">
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">Share Skills, Build Community</h1>
-              <p className="text-lg opacity-90 mb-6">
+              <h1 className="text-3xl md:text-4xl font-bold mb-4 text-black">Share Skills, Build Community</h1>
+              <p className="text-lg mb-6 text-black">
                 Connect with like-minded individuals to exchange knowledge, learn new skills, and grow together in a supportive community.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
@@ -150,7 +150,7 @@ export default function Home() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Categories</SelectItem>
-                        {skillCategories.flatMap(cat => 
+                        {skillCategories.flatMap(cat =>
                           cat.skills.map(skill => (
                             <SelectItem key={skill} value={skill}>{skill}</SelectItem>
                           ))
@@ -246,7 +246,6 @@ export default function Home() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* User Stats */}
             <Card>
               <CardContent className="p-6">
                 <h3 className="font-semibold mb-4">Your Activity</h3>
@@ -277,7 +276,6 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            {/* Trending Skills */}
             <Card>
               <CardContent className="p-6">
                 <h3 className="font-semibold mb-4">Trending Skills</h3>
