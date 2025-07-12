@@ -11,8 +11,8 @@ interface SkillTagProps {
 export default function SkillTag({ skill, variant = "offered", removable = false, onRemove }: SkillTagProps) {
   const baseClasses = "text-xs rounded-full";
   const variantClasses = variant === "offered" 
-    ? "bg-skill-secondary bg-opacity-10 text-skill-secondary border-skill-secondary"
-    : "bg-skill-accent bg-opacity-10 text-skill-accent border-skill-accent";
+    ? "bg-skill-secondary bg-opacity-10 text-white border-skill-secondary"
+    : "bg-skill-accent bg-opacity-10 text-white border-skill-accent";
 
   return (
     <Badge 
