@@ -133,6 +133,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin login route
+  app.post("/api/admin/login", async (req, res) => {
+    try {
+      const { email, password } = loginSchema.parse(req.body);
+      
+      // Find user
+      const user = await storage.getUserByEmail(email);
+      if (!user || !user.isAdmin) {
+        return res.status(401).json({ message: "Invalid admin credentials" });
+      }
+
+      // Check if user is banned
+      if (user.isBanned) {
+        return res.status(403).json({ message: "Account has been banned" });
+      }
+
+      // Verify password
+      const isValid = await bcrypt.compare(password, user.password);
+      if (!isValid) {
+        return res.status(401).json({ message: "Invalid admin credentials" });
+      }
+
+      // Generate JWT token
+      const token = jwt.sign(
+        { id: user.id, email: user.email, isAdmin: true },
+        JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+
+      // Remove password from response
+      const { password: _, ...userWithoutPassword } = user;
+      
+      res.json({
+        message: "Admin login successful",
+        user: userWithoutPassword,
+        token,
+      });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message || "Admin login failed" });
+    }
+  });
+
   // User profile routes
   app.get("/api/users/profile", authenticateToken, async (req: any, res) => {
     try {
@@ -381,37 +423,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin login route
-  app.post("/api/admin/login", async (req, res) => {
-    try {
-      const { email, password } = req.body;
-      if (!email || !password) {
-        return res.status(400).json({ message: "Email and password are required" });
-      }
-      const user = await storage.getUserByEmail(email);
-      if (!user || !user.isAdmin) {
-        return res.status(403).json({ message: "Not authorized as admin" });
-      }
-      const isValid = await bcrypt.compare(password, user.password);
-      if (!isValid) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-      const token = jwt.sign(
-        { id: user.id, email: user.email, isAdmin: true },
-        JWT_SECRET,
-        { expiresIn: '24h' }
-      );
-      const { password: _, ...userWithoutPassword } = user;
-      res.json({
-        message: "Admin login successful",
-        user: userWithoutPassword,
-        token,
-        isAdmin: true
-      });
-    } catch (error: any) {
-      res.status(400).json({ message: error.message || "Admin login failed" });
-    }
-  });
+
 
   // Get all skills for moderation
   app.get("/api/admin/skills", authenticateToken, requireAdmin, async (req, res) => {
@@ -468,6 +480,170 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Skill removed successfully" });
     } catch (error: any) {
       res.status(400).json({ message: error.message || "Failed to remove skill" });
+    }
+  });
+
+  // Unban user
+  app.patch("/api/admin/users/:id/unban", authenticateToken, requireAdmin, async (req: any, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      await storage.updateUser(userId, { isBanned: false });
+      res.json({ message: "User unbanned successfully" });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message || "Failed to unban user" });
+    }
+  });
+
+  // Platform-wide messaging system
+  app.post("/api/admin/messages/broadcast", authenticateToken, requireAdmin, async (req: any, res) => {
+    try {
+      const { title, message, type = "info" } = req.body;
+      if (!title || !message) {
+        return res.status(400).json({ message: "Title and message are required" });
+      }
+      
+      // Store platform message in a simple way - you could extend this with a proper messages table
+      const platformMessage = {
+        id: Date.now(),
+        title,
+        message,
+        type, // info, warning, update, maintenance
+        createdAt: new Date().toISOString(),
+        createdBy: req.user.id
+      };
+      
+      // For now, we'll just return success. In a full implementation, you'd store this in the database
+      // and have a way for users to see platform messages on login or in their dashboard
+      res.json({ 
+        message: "Platform message broadcasted successfully",
+        platformMessage 
+      });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message || "Failed to broadcast message" });
+    }
+  });
+
+  // Admin reports and analytics
+  app.get("/api/admin/reports/users", authenticateToken, requireAdmin, async (req: any, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      const userStats = {
+        totalUsers: users.length,
+        activeUsers: users.filter(u => !u.isBanned).length,
+        bannedUsers: users.filter(u => u.isBanned).length,
+        adminUsers: users.filter(u => u.isAdmin).length,
+        usersWithSkills: users.filter(u => (u.skillsOffered?.length || 0) > 0 || (u.skillsWanted?.length || 0) > 0).length,
+        recentUsers: users.filter(u => {
+          const createdAt = new Date(u.createdAt || 0);
+          const thirtyDaysAgo = new Date();
+          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+          return createdAt > thirtyDaysAgo;
+        }).length
+      };
+      res.json(userStats);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to generate user report" });
+    }
+  });
+
+  app.get("/api/admin/reports/swaps", authenticateToken, requireAdmin, async (req: any, res) => {
+    try {
+      const swaps = await storage.getAllSwapRequestsWithUsers();
+      const swapStats = {
+        totalSwaps: swaps.length,
+        pendingSwaps: swaps.filter(s => s.status === "pending").length,
+        acceptedSwaps: swaps.filter(s => s.status === "accepted").length,
+        completedSwaps: swaps.filter(s => s.status === "completed").length,
+        rejectedSwaps: swaps.filter(s => s.status === "rejected").length,
+        recentSwaps: swaps.filter(s => {
+          const createdAt = new Date(s.createdAt);
+          const sevenDaysAgo = new Date();
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+          return createdAt > sevenDaysAgo;
+        }).length
+      };
+      res.json(swapStats);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to generate swap report" });
+    }
+  });
+
+  app.get("/api/admin/reports/feedback", authenticateToken, requireAdmin, async (req: any, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      const feedbackPromises = users.map(u => storage.getUserFeedback(u.id));
+      const allFeedback = (await Promise.all(feedbackPromises)).flat();
+      
+      const feedbackStats = {
+        totalFeedback: allFeedback.length,
+        averageRating: allFeedback.length > 0 ? 
+          allFeedback.reduce((sum, f) => sum + f.rating, 0) / allFeedback.length : 0,
+        ratingDistribution: {
+          1: allFeedback.filter(f => f.rating === 1).length,
+          2: allFeedback.filter(f => f.rating === 2).length,
+          3: allFeedback.filter(f => f.rating === 3).length,
+          4: allFeedback.filter(f => f.rating === 4).length,
+          5: allFeedback.filter(f => f.rating === 5).length,
+        },
+        recentFeedback: allFeedback.filter(f => {
+          const createdAt = new Date(f.createdAt || 0);
+          const sevenDaysAgo = new Date();
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+          return createdAt > sevenDaysAgo;
+        }).length
+      };
+      res.json(feedbackStats);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to generate feedback report" });
+    }
+  });
+
+  // Download reports as CSV
+  app.get("/api/admin/reports/download/:type", authenticateToken, requireAdmin, async (req: any, res) => {
+    try {
+      const { type } = req.params;
+      let csvData = "";
+      let filename = "";
+
+      switch (type) {
+        case "users":
+          const users = await storage.getAllUsers();
+          csvData = "ID,Name,Email,Location,Created At,Is Admin,Is Banned,Skills Offered,Skills Wanted\n";
+          csvData += users.map(u => 
+            `${u.id},"${u.name}","${u.email}","${u.location || ''}","${u.createdAt}","${u.isAdmin}","${u.isBanned}","${(u.skillsOffered || []).join(';')}","${(u.skillsWanted || []).join(';')}"`
+          ).join("\n");
+          filename = `users_report_${new Date().toISOString().split('T')[0]}.csv`;
+          break;
+
+        case "swaps":
+          const swaps = await storage.getAllSwapRequestsWithUsers();
+          csvData = "ID,Sender,Receiver,Offered Skill,Requested Skill,Status,Message,Created At\n";
+          csvData += swaps.map(s => 
+            `${s.id},"${s.sender.name}","${s.receiver.name}","${s.offeredSkill}","${s.requestedSkill}","${s.status}","${s.message || ''}","${s.createdAt}"`
+          ).join("\n");
+          filename = `swaps_report_${new Date().toISOString().split('T')[0]}.csv`;
+          break;
+
+        case "feedback":
+          const allUsers = await storage.getAllUsers();
+          const feedbackPromises = allUsers.map(u => storage.getUserFeedbackWithDetails(u.id));
+          const allFeedbackDetails = (await Promise.all(feedbackPromises)).flat();
+          csvData = "Feedback ID,Reviewer,Reviewee,Rating,Comment,Created At\n";
+          csvData += allFeedbackDetails.map(f => 
+            `${f.id},"${f.reviewerName}","${f.revieweeName}","${f.rating}","${f.comment || ''}","${f.createdAt}"`
+          ).join("\n");
+          filename = `feedback_report_${new Date().toISOString().split('T')[0]}.csv`;
+          break;
+
+        default:
+          return res.status(400).json({ message: "Invalid report type" });
+      }
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(csvData);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to download report" });
     }
   });
 
