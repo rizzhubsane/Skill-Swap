@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
-import { insertUserSchema, loginSchema, insertSwapRequestSchema, insertFeedbackSchema, updateUserSchema } from "@shared/schema";
+import { storage } from "./storage.js";
+import { insertUserSchema, loginSchema, insertSwapRequestSchema, insertFeedbackSchema, updateUserSchema } from "../shared/schema.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import multer from "multer";

@@ -1,5 +1,5 @@
-import { users, swapRequests, feedback, type User, type InsertUser, type SwapRequest, type InsertSwapRequest, type Feedback, type InsertFeedback, type UpdateUser } from "@shared/schema";
-import { db } from "./db";
+import { users, swapRequests, feedback, type User, type InsertUser, type SwapRequest, type InsertSwapRequest, type Feedback, type InsertFeedback, type UpdateUser } from "../shared/schema.js";
+import { db } from "./db.js";
 import { eq, and, or, ilike, desc, asc, sql } from "drizzle-orm";
 
 export interface IStorage {
