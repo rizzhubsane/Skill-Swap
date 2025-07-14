@@ -1,4 +1,4 @@
-import { users, swapRequests, feedback, type User, type InsertUser, type SwapRequest, type InsertSwapRequest, type Feedback, type InsertFeedback, type UpdateUser } from "../shared/schema.js";
+import { users, swapRequests, feedback, platformMessages, type User, type InsertUser, type SwapRequest, type InsertSwapRequest, type Feedback, type InsertFeedback, type UpdateUser } from "../shared/schema.js";
 import { db } from "./db.js";
 import { eq, and, or, ilike, desc, asc, sql } from "drizzle-orm";
 
@@ -31,6 +31,10 @@ export interface IStorage {
   getUserFeedback(userId: number): Promise<Feedback[]>;
   getUserFeedbackWithDetails(userId: number): Promise<any[]>;
   updateUserRating(userId: number): Promise<void>;
+
+  // Platform messages
+  createPlatformMessage(data: { title: string; message: string; type: string; createdBy: number }): Promise<any>;
+  getPlatformMessages(): Promise<any[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -270,6 +274,21 @@ export class DatabaseStorage implements IStorage {
         .set({ rating: averageRating })
         .where(eq(users.id, userId));
     }
+  }
+
+  async createPlatformMessage(data: { title: string; message: string; type: string; createdBy: number }): Promise<any> {
+    const [msg] = await db.insert(platformMessages).values({
+      title: data.title,
+      message: data.message,
+      type: data.type,
+      createdBy: data.createdBy,
+      isActive: true,
+    }).returning();
+    return msg;
+  }
+
+  async getPlatformMessages(): Promise<any[]> {
+    return await db.select().from(platformMessages).where(eq(platformMessages.isActive, true)).orderBy(desc(platformMessages.createdAt));
   }
 }
 

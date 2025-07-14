@@ -8,6 +8,9 @@ import multer from "multer";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
+// In-memory store for platform messages
+const platformMessages: any[] = [];
+
 // Configure multer for file uploads
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -501,19 +504,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!title || !message) {
         return res.status(400).json({ message: "Title and message are required" });
       }
-      
-      // Store platform message in a simple way - you could extend this with a proper messages table
-      const platformMessage = {
-        id: Date.now(),
+      const platformMessage = await storage.createPlatformMessage({
         title,
         message,
-        type, // info, warning, update, maintenance
-        createdAt: new Date().toISOString(),
+        type,
         createdBy: req.user.id
-      };
-      
-      // For now, we'll just return success. In a full implementation, you'd store this in the database
-      // and have a way for users to see platform messages on login or in their dashboard
+      });
       res.json({ 
         message: "Platform message broadcasted successfully",
         platformMessage 
@@ -521,6 +517,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       res.status(400).json({ message: error.message || "Failed to broadcast message" });
     }
+  });
+
+  // Endpoint for users to fetch platform messages
+  app.get("/api/messages", authenticateToken, async (req, res) => {
+    const messages = await storage.getPlatformMessages();
+    res.json(messages);
   });
 
   // Admin reports and analytics
